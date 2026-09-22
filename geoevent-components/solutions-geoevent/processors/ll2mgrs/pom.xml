@@ -26,68 +26,69 @@
     <url>https://www.esri.com</url>
   </organization>
   <properties>
-    <project.release>2</project.release>
+    <project.release>3</project.release>
     <compatibility.min>${project.version}</compatibility.min>
     <compatibility.max></compatibility.max>
     <build.time>${maven.build.timestamp}</build.time>
     <gallery.itemId>f34314728ae04664925dfb86ebc0bc3f</gallery.itemId>
-    <release.itemId>e2a1560ce877471a88213a59fc8dd974</release.itemId>
+    <release.itemId>951159ded3794040b932dbeff3860db5</release.itemId>
     <release.name>latlong-mgrs-converter</release.name>
-    <revision>10.6.0</revision>
+    <revision>10.8.1</revision>
     <contact.address>geoevent@esri.com</contact.address>
-    <project.build.properties.encoding>ISO-8859-1
-    </project.build.properties.encoding>
+    <project.build.properties.encoding>ISO-8859-1</project.build.properties.encoding>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.bundle.plugin.version>5.1.8</maven.bundle.plugin.version>
-    <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
-    <maven.resources.plugin.version>3.3.0</maven.resources.plugin.version>
+    <!-- Override with -Dgeoevent.home=... when GeoEvent is installed elsewhere. -->
+    <geoevent.home>C:/Program Files/ArcGIS/Server/GeoEvent</geoevent.home>
+    <!--
+      GeoEvent's geometry-api bundle exports com.esri.* at the product version
+      (12.1.0, 12.2.0, ...), so any upper bound in Import-Package leaves this
+      bundle unresolvable after a product upgrade. Release 2 shipped
+      version="[10.6,12)" and stopped resolving at 12.1. Keep this open ended.
+    -->
+    <esri.package.version.range>0.0.0</esri.package.version.range>
+    <!--
+      JDK 8 cannot read the GeoEvent 12.x SDK jar. Raise java.build.version to
+      match the JDK that built the targeted SDK (25 for 12.2). release 8 keeps
+      the emitted bundle portable across GeoEvent runtimes.
+    -->
+    <java.build.version>11</java.build.version>
+    <java.release>8</java.release>
+    <!-- maven-bundle-plugin 6.x requires Maven 3.8.1 or newer. -->
+    <maven.minimum.version>3.8.1</maven.minimum.version>
+    <maven.bundle.plugin.version>6.1.2</maven.bundle.plugin.version>
+    <maven.compiler.plugin.version>3.16.0</maven.compiler.plugin.version>
+    <maven.enforcer.plugin.version>3.6.3</maven.enforcer.plugin.version>
+    <maven.resources.plugin.version>3.5.0</maven.resources.plugin.version>
+    <maven.surefire.plugin.version>3.5.6</maven.surefire.plugin.version>
     <junit.version>4.13.2</junit.version>
-    <jackson.version>1.9.5</jackson.version>
+    <easymock.version>5.7.0</easymock.version>
   </properties>
   <repositories>
     <repository>
       <id>ages-sdk-repo</id>
       <name>GeoEvent Processor SDK repository</name>
-      <url>file:///Program Files/ArcGIS/Server/GeoEvent/sdk/repository</url>
+      <url>file:///${geoevent.home}/sdk/repository</url>
     </repository>
     <repository>
       <id>GEP</id>
       <name>GeoEvent Processor embedded repository</name>
       <layout>default</layout>
-      <url>file:///Program Files/ArcGIS/Server/GeoEvent/System</url>
+      <url>file:///${geoevent.home}/System</url>
     </repository>
   </repositories>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-        <version>1.1.1</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>com.esri.geoevent.sdk</groupId>
       <artifactId>geoevent-sdk</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
+    <!-- GeoEvent's geometry-api bundle supplies the projection engine (com.esri.sde.sdk.pe.*). -->
     <dependency>
       <groupId>com.esri.geometry</groupId>
       <artifactId>geometry-api</artifactId>
       <version>${project.version}</version>
-      <scope>system</scope>
-      <systemPath>${basedir}/lib/geometry-api-${project.version}.jar
-      </systemPath>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.osgi.core</artifactId>
-      <version>1.4.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -98,7 +99,7 @@
     <dependency>
       <groupId>org.easymock</groupId>
       <artifactId>easymock</artifactId>
-      <version>4.3</version>
+      <version>${easymock.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -116,51 +117,50 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven.compiler.plugin.version}</version>
           <configuration>
-            <source>1.7</source>
-            <target>1.7</target>
+            <release>${java.release}</release>
             <encoding>${project.build.sourceEncoding}</encoding>
+            <compilerArgs>
+              <arg>-Xlint:-options</arg>
+            </compilerArgs>
           </configuration>
         </plugin>
-        <!--This plugin's configuration is used to store Eclipse m2e settings only.
-                It has no influence on the Maven build itself. -->
         <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.codehaus.mojo
-                    </groupId>
-                    <artifactId>license-maven-plugin
-                    </artifactId>
-                    <versionRange>[1.5,)
-                    </versionRange>
-                    <goals>
-                      <goal>update-file-header
-                      </goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore></ignore>
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${maven.enforcer.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>enforce-build-toolchain</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>[${maven.minimum.version},)</version>
+                </requireMavenVersion>
+                <requireJavaVersion>
+                  <version>[${java.build.version},)</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <version>${maven.resources.plugin.version}</version>
         <configuration>
-          <propertiesEncoding>${project.build.properties.encoding}
-          </propertiesEncoding>
+          <propertiesEncoding>${project.build.properties.encoding}</propertiesEncoding>
         </configuration>
       </plugin>
       <plugin>
@@ -173,20 +173,15 @@
           <instructions>
             <AGES-Gallery>TRUE</AGES-Gallery>
             <AGES-Release>${project.release}</AGES-Release>
-            <Bundle-Version>${project.version}.${project.release}
-            </Bundle-Version>
-            <Bundle-SymbolicName>${project.groupId}.${project.artifactId}
-            </Bundle-SymbolicName>
-            <Bundle-ContactAddress>geoeventprocessor@esri.com
-            </Bundle-ContactAddress>
             <AGES-Domain>com.esri.geoevent.solutions.processor</AGES-Domain>
+            <Bundle-Version>${project.version}.${project.release}</Bundle-Version>
+            <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+            <Bundle-ContactAddress>${contact.address}</Bundle-ContactAddress>
             <Export-Package />
-            <Private-Package>com.esri.geoevent.solutions.processor.ll2mgrs
-            </Private-Package>
-            <Import-Package>com.esri.sde.sdk.pe.engine;version="[10.6,12)",
-              com.esri.sde.sdk.pe.factory;version="[10.6,12)",
-              com.esri.core.geometry;version="[10.6,12)",*
-            </Import-Package>
+            <Private-Package>com.esri.geoevent.solutions.processor.ll2mgrs</Private-Package>
+            <Import-Package>com.esri.sde.sdk.pe.engine;version="${esri.package.version.range}",
+              com.esri.sde.sdk.pe.factory;version="${esri.package.version.range}",
+              com.esri.core.geometry;version="${esri.package.version.range}",*</Import-Package>
           </instructions>
         </configuration>
       </plugin>

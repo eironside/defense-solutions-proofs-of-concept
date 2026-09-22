@@ -28,7 +28,6 @@ import com.esri.sde.sdk.pe.factory.PeFactory;
 
 import com.esri.ges.framework.i18n.BundleLogger;
 import com.esri.ges.framework.i18n.BundleLoggerFactory;
-import sun.security.validator.ValidatorException;
 
 public class MGRSProcessor extends GeoEventProcessorBase
 {

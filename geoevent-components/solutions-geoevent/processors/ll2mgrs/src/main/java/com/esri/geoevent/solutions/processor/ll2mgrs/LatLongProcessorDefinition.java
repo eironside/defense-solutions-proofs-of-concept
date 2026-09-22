@@ -38,7 +38,7 @@ public class LatLongProcessorDefinition extends GeoEventProcessorDefinitionBase{
 
 	@Override
 	public String getVersion() {
-		return "10.6.0";
+		return "10.8.1";
 	}
 
 	@Override
